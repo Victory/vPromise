@@ -1,0 +1,15 @@
+language: node_js
+sudo: false
+matrix:
+  include:
+    - node_js: "4"
+    - node_js: "5"
+  fast_finish: true
+before_script:
+- git submodule update --init --recursive
+- npm install promises-aplus-tests 
+script: "./node_modules/mocha/bin/mocha"
+branches:
+  only:
+    - master
+
