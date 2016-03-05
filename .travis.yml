@@ -8,6 +8,7 @@ matrix:
 before_script:
 - git submodule update --init --recursive
 - npm install promises-aplus-tests 
+- npm install mocha
 script: "./node_modules/mocha/bin/mocha"
 branches:
   only:
