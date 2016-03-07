@@ -33,6 +33,8 @@
 
     p.then = function (fn) {
       debug('then', fn);
+
+      return new VPromise(fn);
     };
 
     p.catch = function (fn) {
