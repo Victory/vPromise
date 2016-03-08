@@ -1,12 +1,23 @@
 var vPromise = require('../vPromise.js');
 var adapter = {
   resolved: function (value) {
-    return new vPromise(value);
+    return vPromise.resovle;
   },
   rejected: function (reason) {
-    return new vPromise(reason);
+    return vPromise.reject;
   },
   deferred: function () {
+    var resolve;
+    var reject;
+    var vP = new vPromise(function (_resolve, _reject) {
+      resolve = _resolve;
+      reject = _reject;
+    });
+    return {
+      promise: vP,
+      resolve: resolve,
+      reject: reject
+    };
   }
 };
 
