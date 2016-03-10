@@ -86,4 +86,6 @@
   if (typeof module != 'undefined') {
     module.exports = vPromise;
   }
+
+  // test commit
 }());
