@@ -2,7 +2,6 @@
   'use strict';
 
   function debug() {
-    debugger;
     console.log(arguments);
   }
 
@@ -15,9 +14,8 @@
   };
 
   var vPromise = function (fn) {
-    var state = states.PENDING;
-    var value;
-    var cbChains = [];
+    this._state = states.PENDING;
+    this.value = null;
     var that = this;
 
     if (fn === skip) {
@@ -44,7 +42,8 @@
 
     var handle = function (cur, resolve, reject, next) {
       debug(cur);
-      if (cur.state !== states.pending) {
+      if (cur.state !== states.FULFILLED) {
+        reject();
         return;
       }
  
@@ -57,17 +56,17 @@
 
     var p = {};
 
-    p.then = function (resolve, reject) {
+    this.then = function (resolve, reject) {
       debug('then', fn);
       var next = new vPromise(skip);
-      //handle(this, resolve, reject, next);
+      handle(this, resolve, reject, next);
       return next;
     };
 
-    p.catch = function (fn) {
+    this.catch = function (fn) {
     };
 
-    return p;
+    return this;
   };
   vPromise._state = states.PENDING;
 
@@ -77,15 +76,16 @@
   };
 
   function doResolve(skipped, value) {
-    console.log(skipped); 
+    skipped._state = states.FULFILLED;
+    return skipped;
   }
 
   vPromise.reject = function (value) {
+
   };
 
   if (typeof module != 'undefined') {
     module.exports = vPromise;
   }
 
-  // test commit
 }());
