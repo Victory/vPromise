@@ -80,9 +80,15 @@
     return skipped;
   }
 
-  vPromise.reject = function (value) {
-
+  vPromise.reject = function (reason) {
+    var skipped = new vPromise(skip);
+    return doReject(skipped, reason);
   };
+
+  function doReject(skipped, reason) {
+    skipped._state = states.REJECTED;
+    return skipped;
+  }
 
   if (typeof module != 'undefined') {
     module.exports = vPromise;
