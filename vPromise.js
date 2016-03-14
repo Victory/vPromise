@@ -5,12 +5,12 @@
     console.log(arguments);
   }
 
-  function skip() {};
+  function skip() {}
 
   var states = {
     PENDING: 0,
     FULFILLED: 1,
-    REJECTED: 2,
+    REJECTED: 2
   };
 
   var vPromise = function (fn) {
@@ -18,16 +18,12 @@
     this.value = null;
     var that = this;
 
-    if (fn === skip) {
-      return;
-    }
-
     var onFullfilled = function (resolve) {
       debug('onFullfilled');
       if (state === states.FULFILLED || state == states.REJECTED) {
         return;
       }
-      state = state.FULFILLED;
+      this._state = state.FULFILLED;
       resolve(); 
     };
 
@@ -36,13 +32,13 @@
       if (state === states.FULFILLED || state == states.REJECTED) {
         return;
       }
-      state = states.REJECTED;
+      this._state = states.REJECTED;
       reject(); 
     };
 
     var handle = function (cur, resolve, reject, next) {
       debug(cur);
-      if (cur.state !== states.FULFILLED) {
+      if (cur._state !== states.FULFILLED) {
         reject();
         return;
       }
@@ -68,7 +64,6 @@
 
     return this;
   };
-  vPromise._state = states.PENDING;
 
   vPromise.resolve = function (value) {
     var skipped = new vPromise(skip);
