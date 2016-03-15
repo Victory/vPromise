@@ -19,43 +19,37 @@
     var that = this;
 
     var onFullfilled = function (resolve) {
-      debug('onFullfilled');
-      if (state === states.FULFILLED || state == states.REJECTED) {
+      if (that._state === states.PENDING) {
+        that._state = state.FULFILLED;
+        resolve();
         return;
       }
-      this._state = state.FULFILLED;
-      resolve(); 
     };
 
     var onReject = function (reject, reason) {
-      debug('onReject');
-      if (state === states.FULFILLED || state == states.REJECTED) {
+      if (that._state === states.FULFILLED || that._state == states.REJECTED) {
         return;
       }
       this._state = states.REJECTED;
       reject(); 
     };
 
-    var handle = function (cur, resolve, reject, next) {
-      debug(cur);
-      if (cur._state !== states.FULFILLED) {
-        reject();
+    var handle = function (resolve, reject, next) {
+      if (that._state !== states.PENDING) {
         return;
       }
- 
+
       try {
         fn(onFullfilled(resolve), onReject(reject));
       } catch (e) {
-        debug('catch', e);
-      } 
+      }
     };
 
     var p = {};
 
     this.then = function (resolve, reject) {
-      debug('then', fn);
-      var next = new vPromise(skip);
-      handle(this, resolve, reject, next);
+      var next = new vPromise(fn);
+      handle(resolve, reject, next);
       return next;
     };
 
