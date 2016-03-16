@@ -18,7 +18,7 @@
     this.value = null;
     var that = this;
 
-    var onFullfilled = function (resolve) {
+    var onFulfilled = function (resolve) {
       if (that._state === states.PENDING) {
         that._state = state.FULFILLED;
         resolve();
@@ -27,27 +27,38 @@
     };
 
     var onReject = function (reject, reason) {
-      if (that._state === states.FULFILLED || that._state == states.REJECTED) {
+      if (that._state === states.PENDING) {
+        that._state = state.REJECTED;
+        reject();
         return;
       }
-      this._state = states.REJECTED;
-      reject(); 
     };
 
     var handle = function (resolve, reject, next) {
-      if (that._state !== states.PENDING) {
+      if (that._state === states.PENDING) {
         return;
       }
 
       try {
-        fn(onFullfilled(resolve), onReject(reject));
+        fn(onFulfilled(resolve), onReject(reject));
       } catch (e) {
+        debug(e);
       }
     };
+
+    if (fn !== skip) {
+      fn(function (value) {
+      },
+      function (reason) {
+      });
+    }
 
     var p = {};
 
     this.then = function (resolve, reject) {
+      if (that._state === states.PENDING) {
+        return;
+      }
       var next = new vPromise(fn);
       handle(resolve, reject, next);
       return next;
