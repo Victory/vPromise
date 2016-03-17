@@ -68,6 +68,7 @@
       }
       var next = new vPromise(fn);
       handle(resolve, reject, next);
+      next._state = -1; // placeholder
       return next;
     };
 
