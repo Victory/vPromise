@@ -19,16 +19,23 @@
     var that = this;
 
     var onFulfilled = function (resolve) {
-      if (that._state === states.PENDING) {
-        that._state = state.FULFILLED;
+      if (typeof resolve !== 'function') { // 2.2.1
+        return;
+      }
+
+      if (that._state !== states.PENDING) {
+        that._state = states.FULFILLED;
         resolve();
         return;
       }
     };
 
     var onReject = function (reject, reason) {
-      if (that._state === states.PENDING) {
-        that._state = state.REJECTED;
+      if (typeof reject !== 'function') { // 2.2.1
+        return;
+      }
+      if (that._state !== states.PENDING) {
+        that._state = states.REJECTED;
         reject();
         return;
       }
