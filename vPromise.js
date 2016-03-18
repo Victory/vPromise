@@ -25,8 +25,7 @@
 
       if (that._state !== states.PENDING) {
         that._state = states.FULFILLED;
-        resolve();
-        return;
+        resolve(that.value);
       }
     };
 
@@ -36,12 +35,11 @@
       }
       if (that._state !== states.PENDING) {
         that._state = states.REJECTED;
-        reject();
-        return;
+        reject(reason);
       }
     };
 
-    var handle = function (resolve, reject, next) {
+    var handle = function (resolve, reject) {
       if (that._state === states.PENDING) {
         return;
       }
@@ -55,12 +53,12 @@
 
     if (fn !== skip) {
       fn(function (value) {
+        that.value = value;
       },
       function (reason) {
+        that.reason = reason;
       });
     }
-
-    var p = {};
 
     this.then = function (resolve, reject) {
       if (that._state === states.PENDING) {
@@ -85,6 +83,7 @@
 
   function doResolve(skipped, value) {
     skipped._state = states.FULFILLED;
+    skipped.value = value;
     return skipped;
   }
 
@@ -95,8 +94,10 @@
 
   function doReject(skipped, reason) {
     skipped._state = states.REJECTED;
+    skipped.reason = reason;
     return skipped;
   }
+
 
   if (typeof module != 'undefined') {
     module.exports = vPromise;
