@@ -54,7 +54,9 @@
     if (fn !== skip) {
       fn(function (value) {
         that.value = value;
-        that._resolve(value);
+        setTimeout(function () {
+            that._resolve(value);
+         }, 1);
       },
       function (reason) {
         that.reason = reason;
