@@ -54,6 +54,7 @@
     if (fn !== skip) {
       fn(function (value) {
         that.value = value;
+        that._resolve(value);
       },
       function (reason) {
         that.reason = reason;
@@ -62,6 +63,8 @@
 
     this.then = function (resolve, reject) {
       if (that._state === states.PENDING) {
+        that._resolve = resolve;
+        that._reject = reject;
         return;
       }
       var next = new vPromise(fn);
