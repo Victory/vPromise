@@ -55,7 +55,11 @@
       fn(function (value) {
         that.value = value;
         setTimeout(function () {
-            that._resolve(value);
+          if (that._state !== states.PENDING) {
+            return;
+          }
+          that._resolve(value);
+          that._state = states.FULFILLED;
          }, 1);
       },
       function (reason) {
