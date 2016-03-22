@@ -45,7 +45,7 @@
       }
 
       try {
-        fn(onFulfilled(resolve), onReject(reject));
+        fn(onFulfilled(resolve), onReject(reject, that.reason));
       } catch (e) {
         debug(e);
       }
@@ -64,6 +64,13 @@
       },
       function (reason) {
         that.reason = reason;
+        setTimeout(function () {
+          if (that._state !== states.PENDING) {
+            return;
+          }
+          that._reject(reason);
+          that._state = states.REJECTED;
+         }, 1);
       });
     }
 
@@ -73,8 +80,9 @@
         that._reject = reject;
         return;
       }
+
       var next = new vPromise(fn);
-      handle(resolve, reject, next);
+      handle(resolve, reject);
       next._state = -1; // placeholder
       return next;
     };
