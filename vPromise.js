@@ -2,7 +2,7 @@
   'use strict';
 
   function debug() {
-    console.log(arguments);
+    //console.log(arguments);
   }
 
   function skip() {}
@@ -33,7 +33,7 @@
       if (typeof reject !== 'function') { // 2.2.1
         return;
       }
-      if (that._state !== states.PENDING) {
+      if (that._state !== states.PENDING && that._state !== states.FULFILLED) {
         that._state = states.REJECTED;
         reject(reason);
       }
@@ -44,11 +44,13 @@
         return;
       }
 
-      try {
-        fn(onFulfilled(resolve), onReject(reject, that.reason));
-      } catch (e) {
-        debug(e);
-      }
+      setTimeout(function () {
+          try {
+            fn(onFulfilled(resolve), onReject(reject, that.reason));
+          } catch (e) {
+            debug(e);
+          }
+      }, 1);
     };
 
     if (fn !== skip) {
