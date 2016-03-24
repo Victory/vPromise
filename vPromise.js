@@ -16,6 +16,7 @@
   var vPromise = function (fn) {
     this._state = states.PENDING;
     this.value = null;
+    this._resolveChain = [];
     var that = this;
 
     var onFulfilled = function (resolve) {
@@ -60,6 +61,11 @@
           if (that._state !== states.PENDING) {
             return;
           }
+          var ii;
+          var chainLength = that._resolveChain.length;
+          for (ii = 0; ii < chainLength; ii++) {
+            that._resolveChain[ii](value);
+          }
           that._resolve(value);
           that._state = states.FULFILLED;
          }, 1);
@@ -78,6 +84,9 @@
 
     this.then = function (resolve, reject) {
       if (that._state === states.PENDING) {
+        if (typeof that._resolve == "function") {
+          that._resolveChain.push(that._resolve);
+        }
         that._resolve = resolve;
         that._reject = reject;
         return;
