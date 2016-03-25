@@ -64,7 +64,9 @@
           var ii;
           var chainLength = that._resolveChain.length;
           for (ii = 0; ii < chainLength; ii++) {
-            that._resolveChain[ii](value);
+            try {
+              that._resolveChain[ii](value);
+            } catch (e) {}
           }
           that._resolve(value);
           that._state = states.FULFILLED;
