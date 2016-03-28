@@ -12,21 +12,22 @@
     FULFILLED: 1,
     REJECTED: 2
   };
-
+  var nextValue = {};
   var vPromise = function (fn) {
     this._state = states.PENDING;
     this.value = null;
     this._resolveChain = [];
+    this.nextValue = null;
     var that = this;
 
-    var onFulfilled = function (resolve) {
+    var onFulfilled = function (resolve, val) {
       if (typeof resolve !== 'function') { // 2.2.1
         return;
       }
 
       if (that._state !== states.PENDING) {
         that._state = states.FULFILLED;
-        resolve(that.value);
+        that.nextValue = resolve(val);
       }
     };
 
@@ -45,9 +46,10 @@
         return;
       }
 
+      var val = that.value;
       setTimeout(function () {
           try {
-            fn(onFulfilled(resolve), onReject(reject, that.reason));
+            fn(onFulfilled(resolve,val), onReject(reject, that.reason));
           } catch (e) {
             debug(e);
           }
