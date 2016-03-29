@@ -2,7 +2,7 @@
   'use strict';
 
   function debug() {
-    //console.log(arguments);
+    console.log(arguments);
   }
 
   function skip() {}
@@ -12,22 +12,32 @@
     FULFILLED: 1,
     REJECTED: 2
   };
-  var nextValue = {};
+
+  function asap(cb) {
+    setTimeout(cb, 1);
+  }
+
   var vPromise = function (fn) {
     this._state = states.PENDING;
     this.value = null;
     this._resolveChain = [];
-    this.nextValue = null;
+
     var that = this;
 
     var onFulfilled = function (resolve, val) {
       if (typeof resolve !== 'function') { // 2.2.1
         return;
       }
-
+      var ii;
+      var chainLength = that._resolveChain.length;
+      for (ii = 0; ii < chainLength; ii++) {
+        try {
+          that._resolveChain[ii](val);
+        } catch (e) {}
+      }
+      resolve(val);
       if (that._state !== states.PENDING) {
         that._state = states.FULFILLED;
-        that.nextValue = resolve(val);
       }
     };
 
@@ -47,19 +57,19 @@
       }
 
       var val = that.value;
-      setTimeout(function () {
+      asap(function () {
           try {
             fn(onFulfilled(resolve,val), onReject(reject, that.reason));
           } catch (e) {
             debug(e);
           }
-      }, 1);
+      });
     };
 
     if (fn !== skip) {
       fn(function (value) {
         that.value = value;
-        setTimeout(function () {
+        asap(function () {
           if (that._state !== states.PENDING) {
             return;
           }
@@ -72,17 +82,17 @@
           }
           that._resolve(value);
           that._state = states.FULFILLED;
-         }, 1);
+         });
       },
       function (reason) {
         that.reason = reason;
-        setTimeout(function () {
+        asap(function () {
           if (that._state !== states.PENDING) {
             return;
           }
           that._reject(reason);
           that._state = states.REJECTED;
-         }, 1);
+         });
       });
     }
 
@@ -100,9 +110,6 @@
       handle(resolve, reject);
       next._state = -1; // placeholder
       return next;
-    };
-
-    this.catch = function (fn) {
     };
 
     return this;
