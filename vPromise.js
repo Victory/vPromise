@@ -5,12 +5,14 @@
     console.log(arguments);
   }
 
-  function skip() {}
+  function skip() { return function (){} }
 
   var states = {
     PENDING: 0,
     FULFILLED: 1,
-    REJECTED: 2
+    REJECTED: 2,
+    PUSHEDFULFILLED: 3,
+    PUSHEDREJECTED: 4
   };
 
   function asap(cb) {
@@ -21,15 +23,15 @@
     this._state = states.PENDING;
     this.value = null;
     this.reason = null; // reasons can't change
-    this._resolveChain = [];
-    this.fn = fn;
+    this.chain = [];
+    this.next = fn;
     var that = this;
 
 
     var run = function (next) {
     };
 
-    var startChain = function (chain, args) {
+    var startChain = function (chain) {
       var ii;
       var chainLength = chain.length;
       for (ii = 0; ii < chainLength; ii++) {
@@ -45,7 +47,7 @@
       if (that._state === states.PENDING) {
         that._state = states.FULFILLED;
         that.reason = toArray(arguments);
-        startChain(that._resolveChain, that.reason);
+        startChain(that.resolveChain, that.reason);
       }
 
       return this;
@@ -58,40 +60,52 @@
       return this;
     };
 
+    this.pushFulfilled = function(onFulfilled) {
+      if (that._state == states.PENDING) {
+        onFulfilled.status = states.PUSHEDFULFILLED;
+        that.chain.push(onFulfilled);
+      }
+      if (that._state == states.FULFILLED) {
+        this.resolve();
+      }
+    };
+
     this.then = function (resolve, reject) {
       var vP = new vPromise();
       var onFulfilled;
       var onRejected;
-      if (typeof resolve === "function") {
-        onFulfilled = function () {
-          vP.resolve.apply(that, arguments);
-        };
+
+      if (typeof resolve !== "function") {
+        resolve = skip();
       }
-      if (typeof reject === "function") {
-        onRejected = function () {
-          vP.reject.apply(that, arguments);
-        };
+      onFulfilled = function () {
+        resolve();
       }
 
-      onFulfilled.next = onRejected.next = vP;
+      if (typeof reject !== "function") {
+        reject = skip();
+      }
+      onRejected = function () {
+        reject();
+      }
 
-      that._resolveChain.push({vp: vP, args: arguments});
-      this.resolve();
+      onRejected.vP = onFulfilled.vP = vP;
+
+      this.pushFulfilled(onFulfilled);
+
       return vP;
     };
+
 
     return this;
   };
 
   vPromise.resolve = function (value) {
-    var resolve;
-    var vP = new vPromise(function (_resolve) {
-      resolve = _resolve;
+    var vP = new vPromise(function (resolve) {
+      resolve();
     });
-    vP.fn(function (value) {
-      return value;
-    });
-    resolve(value);
+    vP._state = states.FULFILLED;
+    vP.then();
     return vP;
   };
 
