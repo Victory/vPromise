@@ -101,11 +101,8 @@
   };
 
   vPromise.resolve = function (value) {
-    var vP = new vPromise(function (resolve) {
-      resolve();
-    });
+    var vP = new vPromise();
     vP._state = states.FULFILLED;
-    vP.then();
     return vP;
   };
 
