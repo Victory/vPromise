@@ -103,6 +103,7 @@
   vPromise.resolve = function (value) {
     var vP = new vPromise();
     vP._state = states.FULFILLED;
+    vP.reason = value;
     return vP;
   };
 
