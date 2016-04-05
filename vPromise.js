@@ -28,14 +28,15 @@
     var that = this;
 
 
-    var run = function (next) {
+    var run = function (next, val) {
+      next(val);
     };
 
-    var startChain = function (chain) {
+    var startChain = function (chain, val) {
       var ii;
       var chainLength = chain.length;
       for (ii = 0; ii < chainLength; ii++) {
-        run(chain[ii]);
+        val = run(chain[ii], val);
       }
     };
 
@@ -43,11 +44,18 @@
       return Array.prototype.slice.call(args, 0);
     };
 
-    this.resolve = function (value) {
+    this._resolve = function () {
+      if (typeof that.next !== "function") { // XXX
+        return;
+      }
       if (that._state === states.PENDING) {
         that._state = states.FULFILLED;
-        that.reason = toArray(arguments);
-        startChain(that.resolveChain, that.reason);
+        asap(function () {
+          that.next(function (val) {
+            that.value = val;
+            startChain(that.chain, val);
+          });
+        });
       }
 
       return this;
@@ -66,7 +74,7 @@
         that.chain.push(onFulfilled);
       }
       if (that._state == states.FULFILLED) {
-        this.resolve();
+        this._resolve();
       }
     };
 
@@ -78,24 +86,24 @@
       if (typeof resolve !== "function") {
         resolve = skip();
       }
-      onFulfilled = function () {
-        resolve();
-      }
+      onFulfilled = function (val) {
+        resolve(val);
+      };
 
       if (typeof reject !== "function") {
         reject = skip();
       }
-      onRejected = function () {
-        reject();
-      }
+      onRejected = function (reason) {
+        reject(reason);
+      };
 
       onRejected.vP = onFulfilled.vP = vP;
 
       this.pushFulfilled(onFulfilled);
 
+      this._resolve();
       return vP;
     };
-
 
     return this;
   };
@@ -103,7 +111,7 @@
   vPromise.resolve = function (value) {
     var vP = new vPromise();
     vP._state = states.FULFILLED;
-    vP.reason = value;
+    vP.value = value;
     return vP;
   };
 
