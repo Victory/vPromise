@@ -18,12 +18,13 @@
   function asap(cb) {
     setTimeout(cb, 1);
   }
-
+  var whoisIndex = 0;
   var vPromise = function (fn) {
     this._state = states.PENDING;
     this.value = null;
     this.reason = null; // reasons can't change
     this.chain = [];
+    var whois = whoisIndex++;
     this.next = fn;
     var that = this;
 
@@ -32,8 +33,9 @@
       next(val);
     };
 
-    var startChain = function (chain, val) {
+    var startChain = function (val) {
       var ii;
+      var chain = that.chain;
       var chainLength = chain.length;
       for (ii = 0; ii < chainLength; ii++) {
         val = run(chain[ii], val);
@@ -45,16 +47,15 @@
     };
 
     this._resolve = function () {
-      if (typeof that.next !== "function") { // XXX
-        return;
-      }
       if (that._state === states.PENDING) {
         that._state = states.FULFILLED;
         asap(function () {
-          that.next(function (val) {
-            that.value = val;
-            startChain(that.chain, val);
-          });
+          if (typeof that.next === "function") { // XXX
+            that.next(function (val) {
+              that.value = val;
+              startChain(val);
+            });
+          }
         });
       }
 
@@ -68,10 +69,10 @@
       return this;
     };
 
-    this.pushFulfilled = function(onFulfilled) {
+    this.pushOnFulfilled = function(onFulfilled) {
       if (that._state == states.PENDING) {
         onFulfilled.status = states.PUSHEDFULFILLED;
-        that.chain.push(onFulfilled);
+        onFulfilled.vP.chain.push(onFulfilled);
       }
       if (that._state == states.FULFILLED) {
         this._resolve();
@@ -79,6 +80,7 @@
     };
 
     this.then = function (resolve, reject) {
+      console.log(whois);
       var vP = new vPromise();
       var onFulfilled;
       var onRejected;
@@ -99,7 +101,7 @@
 
       onRejected.vP = onFulfilled.vP = vP;
 
-      this.pushFulfilled(onFulfilled);
+      this.pushOnFulfilled(onFulfilled);
 
       this._resolve();
       return vP;
