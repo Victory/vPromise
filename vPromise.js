@@ -7,6 +7,19 @@
 
   function skip() { return function (){} }
 
+  var toArray = function (args) {
+    return Array.prototype.slice.call(args, 0);
+  };
+
+  var isObject = function (obj) {
+    return obj.toString() == "[object Object]";
+  };
+
+  var isFunction = function (func) {
+    return typeof func === "function";
+  }
+
+
   var states = {
     PENDING: 0,
     FULFILLED: 1,
@@ -18,92 +31,86 @@
   function asap(cb) {
     setTimeout(cb, 1);
   }
-  var whoisIndex = 0;
+
+  var run = function (next, val) {
+    next(val);
+  };
+
+  var startChain = function (val) {
+    var ii;
+    var chain = that.chain;
+    var chainLength = chain.length;
+    for (ii = 0; ii < chainLength; ii++) {
+      val = run(chain[ii], val);
+    }
+  };
+
+
+  var _reject = function (promise, r) {
+
+  }
+
+  var _resolve = function (promise, x) {
+    if (promise === x) {
+      throw new TypeError("promise and x can not be same object");
+    }
+    if (isFunction(x) || isObject(x)) {
+      var then = x.then; // TODO 2.3.3.2
+    }
+
+    if (isFunction(then)) {
+      var called = false;
+      then.call(x, function (y) {
+        if (called) {
+          return;
+        }
+        called = true;
+        _resolve(promise, y);
+      }, function (r) {
+        if (called) {
+          return;
+        }
+        called = true;
+        _reject(promise, r);
+      });
+    }
+  };
+
+
+  var pushOnFulfilled = function(that, onFulfilled) {
+    if (that._state == states.PENDING) {
+      onFulfilled.status = states.PUSHEDFULFILLED;
+      that.chain.push(onFulfilled);
+    }
+    if (that._state == states.FULFILLED) {
+      _resolve(that);
+    }
+  };
+
   var vPromise = function (fn) {
     this._state = states.PENDING;
     this.value = null;
-    this.reason = null; // reasons can't change
     this.chain = [];
-    var whois = whoisIndex++;
-    this.next = fn;
     var that = this;
 
+    if (fn !== skip) {
+      fn(function (val) {
+        that.value = val;
+      }, function () {
 
-    var run = function (next, val) {
-      next(val);
-    };
-
-    var startChain = function (val) {
-      var ii;
-      var chain = that.chain;
-      var chainLength = chain.length;
-      for (ii = 0; ii < chainLength; ii++) {
-        val = run(chain[ii], val);
-      }
-    };
-
-    var toArray = function (args) {
-      return Array.prototype.slice.call(args, 0);
-    };
-
-    this._resolve = function () {
-      if (that._state === states.PENDING) {
-        that._state = states.FULFILLED;
-        asap(function () {
-          if (typeof that.next === "function") { // XXX
-            that.next(function (val) {
-              that.value = val;
-              startChain(val);
-            });
-          }
-        });
-      }
-
-      return this;
-    };
-
-    this.reject = function (reason) {
-      if (that._state === states.REJECTED) {
-        that._state = states.REJECTED;
-      }
-      return this;
-    };
-
-    this.pushOnFulfilled = function(onFulfilled) {
-      if (that._state == states.PENDING) {
-        onFulfilled.status = states.PUSHEDFULFILLED;
-        onFulfilled.vP.chain.push(onFulfilled);
-      }
-      if (that._state == states.FULFILLED) {
-        this._resolve();
-      }
-    };
+      });
+    }
 
     this.then = function (resolve, reject) {
-      console.log(whois);
-      var vP = new vPromise();
-      var onFulfilled;
-      var onRejected;
+      var vP = new vPromise(skip);
 
-      if (typeof resolve !== "function") {
-        resolve = skip();
-      }
-      onFulfilled = function (val) {
-        resolve(val);
-      };
+      asap(function () {
+        if (that._state === states.PENDING) {
+          that._state === states.FULFILLED;
+          _resolve(that, vP);
+        }
+      }, 1);
 
-      if (typeof reject !== "function") {
-        reject = skip();
-      }
-      onRejected = function (reason) {
-        reject(reason);
-      };
-
-      onRejected.vP = onFulfilled.vP = vP;
-
-      this.pushOnFulfilled(onFulfilled);
-
-      this._resolve();
       return vP;
     };
 
