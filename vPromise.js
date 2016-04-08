@@ -104,12 +104,7 @@
     this.then = function (resolve, reject) {
       var vP = new vPromise(skip);
 
-      asap(function () {
-        if (that._state === states.PENDING) {
-          that._state === states.FULFILLED;
-          _resolve(that, vP);
-        }
-      }, 1);
+      _resolve(vP, that.value);
 
       return vP;
     };
