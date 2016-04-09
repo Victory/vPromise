@@ -103,7 +103,7 @@
 
     this.then = function (resolve, reject) {
       var vP = new vPromise(skip);
-
+      vP._state = states.PUSHEDFULFILLED;
       _resolve(vP, that.value);
 
       return vP;
