@@ -89,13 +89,13 @@
 
   var vPromise = function (fn) {
     this._state = states.PENDING;
-    this.value = null;
+    var value = null;
     this.chain = [];
     var that = this;
 
     if (fn !== skip) {
       fn(function (val) {
-        that.value = val;
+        value = val;
       }, function () {
 
       });
@@ -104,8 +104,7 @@
     this.then = function (resolve, reject) {
       var vP = new vPromise(skip);
       vP._state = states.PUSHEDFULFILLED;
-      _resolve(vP, that.value);
-
+      pushOnFulfilled(vP, value);
       return vP;
     };
 
