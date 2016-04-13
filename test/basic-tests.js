@@ -20,4 +20,13 @@ describe("Chan is run on new promise", function () {
       done();
     }, 50);
   });
+
+  it("Will pass along resolve value", function (done) {
+    var vP = new vPromise(function (resolve, reject) {
+      resolve(1);
+    }).then(function (val) {
+      assert.equal(val, 1, "val for first then must be 1");
+      done();
+    });
+  });
 });

@@ -33,6 +33,10 @@
   }
 
   var run = function (next, val) {
+    if (next.status !== states.PENDING) {
+      return;
+    }
+    next.status = states.FULFILLED;
     next(val);
   };
 
@@ -41,7 +45,13 @@
     var chain = this.chain;
     var chainLength = chain.length;
     var val;
-    val = (this.value) ? this.value: initVal;
+
+    if (this._state == states.PUSHEDFULFILLED) {
+      this._state = states.FULFILLED;
+      val = this.value;
+    } else {
+      val = initVal;
+    }
     for (ii = 0; ii < chainLength; ii++) {
       val = run(chain[ii], val);
     }
@@ -97,7 +107,7 @@
     if (fn !== skip) {
       fn(function (val) {
         that.value = val;
-        startChain.call(that);
+        that._state = states.PUSHEDFULFILLED;
       }, function () {
 
       });
@@ -106,9 +116,13 @@
     this.then = function (resolve, reject) {
       var vP = new vPromise(skip);
       vP._state = states.PENDING;
-      vP.chain = that.chain;
-      pushOnFulfilled.call(that, vP, resolve, reject);
-      startChain.call(vP);
+
+      var onFulfilled = function (val) {
+        resolve(val);
+      };
+      onFulfilled.status = states.PENDING;
+      pushOnFulfilled.call(that, vP, onFulfilled, reject);
+      startChain.call(that, vP);
       return vP;
     };
 
