@@ -37,10 +37,11 @@
       return;
     }
     next.status = states.FULFILLED;
-    next(val);
+    next.value = next(val);
+    return next.value;
   };
 
-  var startChain = function (initVal) {
+  var startChain = function () {
     var ii;
     var chain = this.chain;
     var chainLength = chain.length;
@@ -50,13 +51,10 @@
       this._state = states.FULFILLED;
       val = this.value;
     } else {
-      val = initVal;
+      //val = ;
     }
     for (ii = 0; ii < chainLength; ii++) {
-      val = run(chain[ii], val);
-    }
-    if (chainLength > 0) {
-      this.chain = [];
+      run(chain[ii], val);
     }
   };
 
@@ -92,8 +90,8 @@
   };
 
 
-  var pushOnFulfilled = function(vP, onFulfilled, onRejected) {
-    if (vP._state == states.PENDING) {
+  var pushOnFulfilled = function(onFulfilled, onRejected) {
+    if (onFulfilled.status == states.PENDING) {
       this.chain.push(onFulfilled);
     }
   };
@@ -118,11 +116,12 @@
       vP._state = states.PENDING;
 
       var onFulfilled = function (val) {
-        resolve(val);
+        return resolve(val);
       };
       onFulfilled.status = states.PENDING;
-      pushOnFulfilled.call(that, vP, onFulfilled, reject);
-      startChain.call(that, vP);
+      onFulfilled.vP = vP;
+      pushOnFulfilled.call(that, onFulfilled, reject);
+      startChain.call(that);
       return vP;
     };
 
