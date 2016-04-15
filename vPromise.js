@@ -114,14 +114,14 @@
     this.then = function (resolve, reject) {
       var vP = new vPromise(skip);
       vP._state = states.PENDING;
-
+      vP.chain = this.chain;
       var onFulfilled = function (val) {
         return resolve(val);
       };
       onFulfilled.status = states.PENDING;
       onFulfilled.vP = vP;
       pushOnFulfilled.call(that, onFulfilled, reject);
-      startChain.call(that);
+      startChain.call(vP);
       return vP;
     };
 
