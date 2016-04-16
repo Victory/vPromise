@@ -1,9 +1,6 @@
 (function () {
   'use strict';
 
-  function debug() {
-    console.log(arguments);
-  }
 
   function skip() { return function (){} }
 
@@ -58,10 +55,6 @@
     }
   };
 
-
-  var _reject = function (promise, r) {
-
-  }
 
   var _resolve = function (promise, x) {
     if (promise === x) {
