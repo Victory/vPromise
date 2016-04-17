@@ -1,12 +1,7 @@
 (function () {
   'use strict';
 
-
   function skip() { return function (){} }
-
-  var toArray = function (args) {
-    return Array.prototype.slice.call(args, 0);
-  };
 
   var isObject = function (obj) {
     return obj.toString() == "[object Object]";
