@@ -24,35 +24,39 @@
     setTimeout(cb, 1);
   }
 
-  var run = function (next, val) {
-    if (next.status !== states.PENDING) {
-      return;
-    }
-    next.status = states.FULFILLED;
-    next.value = next(val);
-    return next.value;
+  var pushChain = function(onFulfilled, resolve, onRejected, reject) {
+    this.chain.push([onFulfilled, resolve, onRejected, reject]);
   };
 
-  var startChain = function () {
-    var ii;
-    var chain = this.chain;
-    var chainLength = chain.length;
-    var val;
+  var vPromise = function (fn) {
+    this.value = undefined;
+    this.state = states.PENDING;
+    this.chain = [];
+    var prms = this;
 
-    if (this._state == states.PUSHEDFULFILLED) {
-      this._state = states.FULFILLED;
-      val = this.value;
-    } else {
-      //val = ;
+    try {
+      fn(function (val) {
+        prms.resolve(val);
+      }, function (reason) {
+        prms.reject(reason);
+      });
+    } catch (exc) {
+      prms.reject(exc);
     }
-    for (ii = 0; ii < chainLength; ii++) {
-      run(chain[ii], val);
-    }
+
+    this.then = function (resolve, reject) {
+    };
+    return this;
   };
 
+  vPromise.prototype.done = function () {
+    var prms = this;
+  };
 
-  var _resolve = function (promise, x) {
-    if (promise === x) {
+  vPromise.prototype.resolve = function (x) {
+    var prms = this;
+
+    if (prms === x) {
       throw new TypeError("promise and x can not be same object");
     }
     if (isFunction(x) || isObject(x)) {
@@ -66,54 +70,18 @@
           return;
         }
         called = true;
-        _resolve(promise, y);
+        prms.resolve(prms, y);
       }, function (r) {
         if (called) {
           return;
         }
         called = true;
-        _reject(promise, r);
+        prms.reject(prms, r);
       });
     }
-  };
-
-
-  var pushOnFulfilled = function(onFulfilled, onRejected) {
-    if (onFulfilled.status == states.PENDING) {
-      this.chain.push(onFulfilled);
-    }
-  };
-
-  var vPromise = function (fn) {
-    this._state = states.PENDING;
-    var value = null;
-    this.chain = [];
-    var that = this;
-
-    if (fn !== skip) {
-      fn(function (val) {
-        that.value = val;
-        that._state = states.PUSHEDFULFILLED;
-      }, function () {
-
-      });
-    }
-
-    this.then = function (resolve, reject) {
-      var vP = new vPromise(skip);
-      vP._state = states.PENDING;
-      vP.chain = this.chain;
-      var onFulfilled = function (val) {
-        return resolve(val);
-      };
-      onFulfilled.status = states.PENDING;
-      onFulfilled.vP = vP;
-      pushOnFulfilled.call(that, onFulfilled, reject);
-      startChain.call(vP);
-      return vP;
-    };
-
-    return this;
+    prms._state = states.FULFILLED;
+    prms.value = x;
+    prms.done();
   };
 
   vPromise.resolve = function (value) {
