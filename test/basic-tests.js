@@ -2,7 +2,6 @@ var vPromise = require('../vPromise.js');
 var assert = require('chai').assert;
 
 describe("Chan is run on new promise", function () {
- /*
   it("Will run all non-rejected in a row", function (done) {
     var timesRun = 0;
     var finalRun = false;
@@ -21,7 +20,6 @@ describe("Chan is run on new promise", function () {
       done();
     }, 50);
   });
-*/
 
   it("Will pass along resolve value", function (done) {
     var vP = new vPromise(function (resolve, reject) {

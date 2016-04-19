@@ -4,7 +4,7 @@
   function skip() { return function (){} }
 
   var isObject = function (obj) {
-    return obj.toString() == "[object Object]";
+    return typeof obj !== 'undefined' && obj.toString() == "[object Object]";
   };
 
   var isFunction = function (func) {
@@ -20,13 +20,11 @@
     PUSHEDREJECTED: 4
   };
 
+  var u = undefined;
+
   function asap(cb) {
     setTimeout(cb, 1);
   }
-
-  var pushChain = function(onFulfilled, resolve, onRejected, reject) {
-    this.chain.push([onFulfilled, resolve, onRejected, reject]);
-  };
 
   var vPromise = function (fn) {
     this.value = undefined;
@@ -44,13 +42,53 @@
       prms.reject(exc);
     }
 
-    this.then = function (resolve, reject) {
+    this.then = function (onFulfilled, onRejected) {
+      var prms = this;
+
+      return new vPromise(function (resolve, reject) {
+        prms.chain.push({
+          onFulfilled: onFulfilled,
+          resolve: resolve,
+          onRejected: onRejected,
+          reject: reject
+        });
+
+        prms.done();
+      });
     };
     return this;
   };
 
   vPromise.prototype.done = function () {
     var prms = this;
+
+    asap(function () {
+      if (prms._state == states.PENDING) {
+        return;
+      }
+
+      var chainLength = prms.chain.length;
+      if (chainLength == 0) { // nothing to do
+        return;
+      }
+
+      var ii;
+      var next;
+      var onFulfilled, resolve, onRejected, reject;
+      for (ii = 0; ii < chainLength; ii++) {
+        next = prms.chain.shift();
+
+        onFulfilled = next.onFulfilled;
+        resolve = next.resolve;
+        onRejected = next.onRejected;
+        reject = next.reject;
+
+        if (prms._state === states.FULFILLED) {
+          resolve(onFulfilled.call(u, prms.value));
+        }
+      }
+      prms.chains = []; // done with chains
+    });
   };
 
   vPromise.prototype.resolve = function (x) {
