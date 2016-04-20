@@ -1,23 +1,18 @@
 (function () {
   'use strict';
 
-  function skip() { return function (){} }
-
   var isObject = function (obj) {
     return typeof obj !== 'undefined' && obj.toString() == "[object Object]";
   };
 
   var isFunction = function (func) {
     return typeof func === "function";
-  }
-
+  };
 
   var states = {
     PENDING: 0,
     FULFILLED: 1,
-    REJECTED: 2,
-    PUSHEDFULFILLED: 3,
-    PUSHEDREJECTED: 4
+    REJECTED: 2
   };
 
   var u = undefined;
@@ -28,7 +23,7 @@
 
   var vPromise = function (fn) {
     this.value = undefined;
-    this.state = states.PENDING;
+    this._state = states.PENDING;
     this.chain = [];
     var prms = this;
 
@@ -84,7 +79,19 @@
         reject = next.reject;
 
         if (prms._state === states.FULFILLED) {
-          resolve(onFulfilled.call(u, prms.value));
+          if (isFunction(onFulfilled)) {
+            resolve(onFulfilled.call(u, prms.value));
+          } else {
+            resolve(prms.value);
+          }
+        }
+
+        if (prms._state == states.REJECTED) {
+          if (isFunction(onRejected)) {
+            reject(onRejected.call(u, prms.value));
+          } else {
+            reject(prms.value);
+          }
         }
       }
       prms.chains = []; // done with chains
@@ -117,22 +124,30 @@
         prms.reject(prms, r);
       });
     }
+
     prms._state = states.FULFILLED;
     prms.value = x;
     prms.done();
   };
 
+  vPromise.prototype.reject = function (reason) {
+    var prms = this;
+
+    prms._state = states.REJECTED;
+    prms.value = reason;
+    prms.done();
+  };
+
   vPromise.resolve = function (value) {
-    var vP = new vPromise();
-    vP._state = states.FULFILLED;
-    vP.value = value;
-    return vP;
+    return new vPromise(function (resolve) {
+      resolve(value);
+    });
   };
 
   vPromise.reject = function (reason) {
-    var vP = new vPromise();
-    vP.reject(reason);
-    return vP;
+    return new vPromise(function (resolve, reject) {
+      reject(reason);
+    });
   };
 
   if (typeof module != 'undefined') {
