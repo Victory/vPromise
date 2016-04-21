@@ -77,24 +77,26 @@
         resolve = next.resolve;
         onRejected = next.onRejected;
         reject = next.reject;
-
-        if (prms._state === states.FULFILLED) {
-          if (isFunction(onFulfilled)) {
-            resolve(onFulfilled.call(u, prms.value));
-          } else {
-            resolve(prms.value);
+        try {
+          if (prms._state === states.FULFILLED) {
+            if (isFunction(onFulfilled)) {
+              resolve(onFulfilled.call(u, prms.value));
+            } else {
+              resolve(prms.value);
+            }
           }
-        }
 
-        if (prms._state == states.REJECTED) {
-          if (isFunction(onRejected)) {
-            reject(onRejected.call(u, prms.value));
-          } else {
-            reject(prms.value);
+          if (prms._state === states.REJECTED) {
+            if (isFunction(onRejected)) {
+              reject(onRejected.call(u, prms.value));
+            } else {
+              reject(prms.value);
+            }
           }
+        } catch (reason) {
+          reject(reason);
         }
       }
-      prms.chains = []; // done with chains
     });
   };
 
@@ -110,19 +112,29 @@
 
     if (isFunction(then)) {
       var called = false;
-      then.call(x, function (y) {
+      try {
+        then.call(x, function (y) {
+          if (called) {
+            return;
+          }
+          called = true;
+          prms.resolve(prms, y);
+        }, function (r) {
+          if (called) {
+            return;
+          }
+          called = true;
+          prms.reject(prms, r);
+        });
+        return;
+      } catch (reason) {
         if (called) {
           return;
         }
         called = true;
-        prms.resolve(prms, y);
-      }, function (r) {
-        if (called) {
-          return;
-        }
-        called = true;
-        prms.reject(prms, r);
-      });
+        prms.reject(reason);
+        return;
+      }
     }
 
     prms._state = states.FULFILLED;
