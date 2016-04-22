@@ -32,4 +32,39 @@ describe("Chan is run on new promise", function () {
       done();
     });
   });
+
+  it("Will pass along rejected even if thrown", function (done) {
+
+    var sentinel = {s1: "s1"};
+    var sentinel2 = {s2: "s2"};
+    var sentinel3 = {s3: "s3"};
+
+    var numTimesCalled = 0;
+    var promise = vPromise.reject();
+
+    promise.then(null, function () {
+      return sentinel;
+    }).then(function (value) {
+      assert.strictEqual(value, sentinel);
+      numTimesCalled += 1;
+    });
+
+    promise.then(null, function () {
+      throw sentinel2;
+    }).then(null, function (reason) {
+      assert.strictEqual(reason, sentinel2);
+      numTimesCalled += 1;
+    });
+
+    promise.then(null, function () {
+      return sentinel3;
+    }).then(function (value) {
+      assert.strictEqual(value, sentinel3);
+      numTimesCalled += 1;
+    });
+
+    setTimeout(function () {
+      assert.equal(numTimesCalled, 3, "Did not call 3 times");
+    }, 500);
+  });
 });
