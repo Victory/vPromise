@@ -145,6 +145,10 @@
   vPromise.prototype.reject = function (reason) {
     var prms = this;
 
+    if (prms._state === states.PENDING && prms === reason) {
+      throw new TypeError();
+    }
+
     prms._state = states.REJECTED;
     prms.value = reason;
     prms.done();
