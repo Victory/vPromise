@@ -107,7 +107,11 @@
       throw new TypeError("promise and x can not be same object");
     }
     if (isFunction(x) || isObject(x)) {
-      var then = x.then; // TODO 2.3.3.2
+      try {
+        var then = x.then;
+      } catch (exc) {
+        prms.reject(exc);
+      }
     }
 
     if (isFunction(then)) {
