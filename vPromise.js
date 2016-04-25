@@ -51,7 +51,8 @@
         prms.done();
       });
     };
-    return this;
+
+    //return prms;
   };
 
   vPromise.prototype.done = function () {
@@ -95,6 +96,7 @@
           }
         } catch (reason) {
           reject(reason);
+          return;
         }
       }
     });
@@ -122,13 +124,13 @@
             return;
           }
           called = true;
-          prms.resolve(prms, y);
+          prms.resolve(y);
         }, function (r) {
           if (called) {
             return;
           }
           called = true;
-          prms.reject(prms, r);
+          prms.reject(r);
         });
         return;
       } catch (reason) {

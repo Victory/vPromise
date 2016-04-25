@@ -40,7 +40,7 @@ describe("Chan is run on new promise", function () {
     var sentinel3 = {s3: "s3"};
 
     var numTimesCalled = 0;
-    var promise = vPromise.reject();
+    var promise = vPromise.reject(sentinel);
 
     promise.then(null, function () {
       return sentinel;
