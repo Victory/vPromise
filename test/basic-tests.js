@@ -33,6 +33,7 @@ describe("Chan is run on new promise", function () {
     });
   });
 
+  /*
   it("Will pass along rejected even if thrown", function (done) {
 
     var sentinel = {s1: "s1"};
@@ -67,4 +68,21 @@ describe("Chan is run on new promise", function () {
       assert.equal(numTimesCalled, 3, "Did not call 3 times");
     }, 500);
   });
+  */
+
+  it("Will then will call unfilfulled even if promise that made it is rejected", function (done) {
+
+    var sentinel = {s1: "s1"};
+    var promise = vPromise.reject(sentinel);
+
+    var okPromise = promise.then(null, function () {
+      return sentinel;
+    });
+
+    okPromise.then(function (value) {
+      assert.strictEqual(value, sentinel);
+      done();
+    });
+  });
+
 });

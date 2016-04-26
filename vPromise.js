@@ -1,6 +1,9 @@
 (function () {
   'use strict';
 
+  var id = 0; // debug
+  var prmsl = []; // debug
+
   var isObject = function (obj) {
     return typeof obj !== 'undefined' && obj.toString() == "[object Object]";
   };
@@ -25,7 +28,10 @@
     this.value = undefined;
     this._state = states.PENDING;
     this.chain = [];
+    this._id = id; // debug
+    id += 1;
     var prms = this;
+    prmsl.push(prms);
 
     try {
       fn(function (val) {
@@ -36,23 +42,21 @@
     } catch (exc) {
       prms.reject(exc);
     }
+  };
 
-    this.then = function (onFulfilled, onRejected) {
-      var prms = this;
+  vPromise.prototype.then = function (onFulfilled, onRejected) {
+    var prms = this;
 
-      return new vPromise(function (resolve, reject) {
-        prms.chain.push({
-          onFulfilled: onFulfilled,
-          resolve: resolve,
-          onRejected: onRejected,
-          reject: reject
-        });
-
-        prms.done();
+    return new vPromise(function (resolve, reject) {
+      prms.chain.push({
+        onFulfilled: onFulfilled,
+        resolve: resolve,
+        onRejected: onRejected,
+        reject: reject
       });
-    };
 
-    //return prms;
+      prms.done();
+    });
   };
 
   vPromise.prototype.done = function () {
@@ -89,7 +93,7 @@
 
           if (prms._state === states.REJECTED) {
             if (isFunction(onRejected)) {
-              reject(onRejected.call(u, prms.value));
+              resolve(onRejected.call(u, prms.value));
             } else {
               reject(prms.value);
             }
