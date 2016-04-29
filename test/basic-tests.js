@@ -84,6 +84,22 @@ describe("Chan is run on new promise", function () {
     });
   });
 
+  it("Simple throw should still continue", function (done) {
+    var vP = new vPromise();
+
+    vP.then(function () {
+      throw 1;
+    });
+
+    vP.then(function () {
+      done();
+    });
+
+    setTimeout(function () {
+     vP.resolve(0);
+    }, 50);
+  });
+
   it("Will call fulfilled even if thrown", function (done) {
     var vP = new vPromise();
 
@@ -99,4 +115,5 @@ describe("Chan is run on new promise", function () {
      vP.resolve(0);
     }, 50);
   });
+
 });
