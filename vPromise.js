@@ -63,7 +63,7 @@
     var prms = this;
 
     asap(function () {
-      if (prms._state == states.PENDING) {
+      if (prms._state === states.PENDING) {
         return;
       }
 
@@ -100,7 +100,6 @@
           }
         } catch (reason) {
           reject(reason);
-          return;
         }
       }
     });

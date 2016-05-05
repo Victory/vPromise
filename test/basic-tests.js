@@ -2,7 +2,6 @@ var vPromise = require('../vPromise.js');
 var assert = require('chai').assert;
 
 describe("Chan is run on new promise", function () {
-  /*
   it("Will run all non-rejected in a row", function (done) {
     var timesRun = 0;
     var finalRun = false;
@@ -85,25 +84,11 @@ describe("Chan is run on new promise", function () {
     });
   });
 
-  it("Simple throw should still continue", function (done) {
-    var vP = new vPromise();
-
-    vP.then(function () {
-      throw 1;
-    });
-
-    vP.then(function () {
-      done();
-    });
-
-    setTimeout(function () {
-     vP.resolve(0);
-    }, 50);
-  });
-  */
-
   it("Will call fulfilled even if thrown", function (done) {
-    var vP = new vPromise();
+    var resolve;
+    var vP = new vPromise(function (_resolve) {
+      resolve = _resolve;
+    });
 
     vP.then(function () {
       return 1;
@@ -120,8 +105,28 @@ describe("Chan is run on new promise", function () {
     });
 
     setTimeout(function () {
-     vP.resolve(0);
+     resolve(0);
     }, 50);
   });
+
+  it("Simple throw should still continue", function (done) {
+    var resolve;
+    var vP = new vPromise(function (_resolve) {
+      resolve = _resolve;
+    });
+
+    vP.then(function () {
+      throw 1;
+    });
+
+    vP.then(function () {
+      done();
+    });
+
+    setTimeout(function () {
+      resolve(0);
+    }, 50);
+  });
+
 
 });
