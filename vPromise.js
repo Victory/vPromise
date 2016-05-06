@@ -5,7 +5,7 @@
   var prmsl = []; // debug
 
   var isObject = function (obj) {
-    return typeof obj !== 'undefined' && obj.toString() == "[object Object]";
+    return typeof obj === "object"; // typeof obj !== 'undefined' && isFunction(obj.toString) && obj.toString() == "[object Object]";
   };
 
   var isFunction = function (func) {
@@ -116,6 +116,7 @@
         var then = x.then;
       } catch (exc) {
         prms.reject(exc);
+        return;
       }
     }
 
