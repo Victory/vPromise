@@ -5,7 +5,7 @@
   var prmsl = []; // debug
 
   var isObject = function (obj) {
-    return typeof obj === "object"; // typeof obj !== 'undefined' && isFunction(obj.toString) && obj.toString() == "[object Object]";
+    return typeof obj === "object";
   };
 
   var isFunction = function (func) {

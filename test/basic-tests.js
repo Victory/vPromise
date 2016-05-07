@@ -5,13 +5,13 @@ describe("Chan is run on new promise", function () {
   it("Will run all non-rejected in a row", function (done) {
     var timesRun = 0;
     var finalRun = false;
-    var vP = new vPromise(function (resolve, reject) {
+    new vPromise(function (resolve) {
       resolve(1);
     }).then(function () {
       timesRun += 1;
     }).then(function () {
       timesRun += 1;
-    }).then(function (val) {
+    }).then(function () {
       assert.equal(timesRun, 2, "Run twice");
       finalRun = true;
     });
@@ -22,7 +22,7 @@ describe("Chan is run on new promise", function () {
   });
 
   it("Will pass along resolve value", function (done) {
-    var vP = new vPromise(function (resolve, reject) {
+    new vPromise(function (resolve) {
       resolve(1);
     }).then(function (val) {
       assert.equal(val, 1, "val for first then must be 1");
@@ -127,6 +127,5 @@ describe("Chan is run on new promise", function () {
       resolve(0);
     }, 50);
   });
-
 
 });
