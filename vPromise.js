@@ -111,7 +111,7 @@
     if (prms === x) {
       throw new TypeError("promise and x can not be same object");
     }
-    if (isFunction(x) || isObject(x)) {
+    if (x !== null && (isFunction(x) || isObject(x))) {
       try {
         var then = x.then;
       } catch (exc) {
