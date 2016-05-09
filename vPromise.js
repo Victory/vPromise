@@ -108,6 +108,10 @@
   vPromise.prototype.resolve = function (x) {
     var prms = this;
 
+    if (prms._state !== states.PENDING) {
+      return;
+    }
+
     if (prms === x) {
       throw new TypeError("promise and x can not be same object");
     }
@@ -154,6 +158,10 @@
 
   vPromise.prototype.reject = function (reason) {
     var prms = this;
+
+    if (prms._state !== states.PENDING) {
+      return;
+    }
 
     if (prms._state === states.PENDING && prms === reason) {
       throw new TypeError();

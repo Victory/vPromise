@@ -127,5 +127,4 @@ describe("Chan is run on new promise", function () {
       resolve(0);
     }, 50);
   });
-
 });
