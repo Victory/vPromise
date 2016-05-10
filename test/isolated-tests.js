@@ -1,6 +1,6 @@
 var vPromise = require('../vPromise.js');
 var assert = require('chai').assert;
-/*
+
 describe("Chan is run on new promise", function () {
   it("Will run all non-rejected in a row", function (done) {
     var timesRun = 0;
@@ -128,7 +128,6 @@ describe("Chan is run on new promise", function () {
     }, 50);
   });
 });
-*/
 
 describe("vPromise.all", function () {
   var sentinal = {sentinal: 'sentinal'};
