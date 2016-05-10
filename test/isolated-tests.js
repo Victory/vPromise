@@ -1,7 +1,7 @@
 var vPromise = require('../vPromise.js');
 var assert = require('chai').assert;
 
-describe("Chan is run on new promise", function () {
+describe("Chain is run on new promise", function () {
   it("Will run all non-rejected in a row", function (done) {
     var timesRun = 0;
     var finalRun = false;
@@ -130,7 +130,7 @@ describe("Chan is run on new promise", function () {
 });
 
 describe("vPromise.all", function () {
-  var sentinal = {sentinal: 'sentinal'};
+  var sentinel = {sentinel: 'sentinel'};
 
   this.timeout(1000);
 
@@ -139,7 +139,7 @@ describe("vPromise.all", function () {
     var p2 = vPromise.resolve(2);
     var p3 = vPromise.resolve(3);
     return [p1, p2, p3];
-  };
+  }
 
   function threeEventuallyResolvedPromises() {
     var p1 = vPromise.resolve(1);
@@ -148,16 +148,16 @@ describe("vPromise.all", function () {
     });
     var p3 = vPromise.resolve(3);
     return [p1, p2, p3];
-  };
+  }
 
   function threeOneThrowsPromises() {
     var p1 = vPromise.resolve(1);
-    var p2 = new vPromise(function (resolve) {
+    var p2 = new vPromise(function () {
       throw "thrown";
     });
     var p3 = vPromise.resolve(3);
     return [p1, p2, p3];
-  };
+  }
 
   function threeOneRejectPromises(reason) {
     var reject;
@@ -172,7 +172,7 @@ describe("vPromise.all", function () {
       return reject(reason);
     }, 50);
     return [p1, p2, p3];
-  };
+  }
 
   it("Should return an thenable", function () {
     var args = threeAlreadyResolvedPromises();
@@ -190,7 +190,7 @@ describe("vPromise.all", function () {
 
   it("Should call resolve when all 3 are eventually resolved", function (done) {
     var args = threeEventuallyResolvedPromises();
-    vPromise.all(args).then(function (x) {
+    vPromise.all(args).then(function () {
       assert(true);
       done();
     });
@@ -208,12 +208,12 @@ describe("vPromise.all", function () {
   });
 
   it("Should call reject when one rejects", function (done) {
-    var args = threeOneRejectPromises(sentinal);
+    var args = threeOneRejectPromises(sentinel);
 
     vPromise.all(args).then(function () {
       assert(false);
     }, function (reason) {
-      assert.strictEqual(reason, sentinal);
+      assert.strictEqual(reason, sentinel);
       done();
     });
   });
