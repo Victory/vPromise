@@ -11,5 +11,6 @@ Current results of the Promises/A+ Test Suite.
 
 
 ## Todo
+ - Cleanup debug code
+ - Try to hide some book keeping
  - vPromise.race
- - vPromise.all

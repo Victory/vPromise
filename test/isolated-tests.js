@@ -1,6 +1,6 @@
 var vPromise = require('../vPromise.js');
 var assert = require('chai').assert;
-
+/*
 describe("Chan is run on new promise", function () {
   it("Will run all non-rejected in a row", function (done) {
     var timesRun = 0;
@@ -126,5 +126,106 @@ describe("Chan is run on new promise", function () {
     setTimeout(function () {
       resolve(0);
     }, 50);
+  });
+});
+*/
+
+describe("vPromise.all", function () {
+  var sentinal = {sentinal: 'sentinal'};
+
+  this.timeout(1000);
+
+  function threeAlreadyResolvedPromises() {
+    var p1 = vPromise.resolve(1);
+    var p2 = vPromise.resolve(2);
+    var p3 = vPromise.resolve(3);
+    return [p1, p2, p3];
+  };
+
+  function threeEventuallyResolvedPromises() {
+    var p1 = vPromise.resolve(1);
+    var p2 = new vPromise(function (resolve) {
+      setTimeout(function () { resolve(2); }, 50);
+    });
+    var p3 = vPromise.resolve(3);
+    return [p1, p2, p3];
+  };
+
+  function threeOneThrowsPromises() {
+    var p1 = vPromise.resolve(1);
+    var p2 = new vPromise(function (resolve) {
+      throw "thrown";
+    });
+    var p3 = vPromise.resolve(3);
+    return [p1, p2, p3];
+  };
+
+  function threeOneRejectPromises(reason) {
+    var reject;
+    var p1 = vPromise.resolve(1);
+    var p2 = new vPromise(function(resolve, _reject) {
+      reject = _reject;
+    });
+
+    var p3 = vPromise.resolve(3);
+
+    setTimeout(function () {
+      return reject(reason);
+    }, 50);
+    return [p1, p2, p3];
+  };
+
+  it("Should return an thenable", function () {
+    var args = threeAlreadyResolvedPromises();
+
+    assert(vPromise.all(args) instanceof vPromise);
+  });
+
+  it("Should call resolve when all 3 are already resolved", function (done) {
+    var args = threeAlreadyResolvedPromises();
+    vPromise.all(args).then(function () {
+      assert(true);
+      done();
+    });
+  });
+
+  it("Should call resolve when all 3 are eventually resolved", function (done) {
+    var args = threeEventuallyResolvedPromises();
+    vPromise.all(args).then(function (x) {
+      assert(true);
+      done();
+    });
+  });
+
+
+  it("Should call reject when one throws", function (done) {
+    var args = threeOneThrowsPromises();
+    vPromise.all(args).then(function () {
+      assert(false);
+    }, function () {
+      assert(true);
+      done();
+    });
+  });
+
+  it("Should call reject when one rejects", function (done) {
+    var args = threeOneRejectPromises(sentinal);
+
+    vPromise.all(args).then(function () {
+      assert(false);
+    }, function (reason) {
+      assert.strictEqual(reason, sentinal);
+      done();
+    });
+  });
+
+  it("Should call resolve with values when all 3 are eventually resolved", function (done) {
+    var args = threeEventuallyResolvedPromises();
+    vPromise.all(args).then(function (x) {
+      assert(x[0] === 1);
+      assert(x[1] === 2);
+      assert(x[2] === 3);
+      done();
+    });
   });
 });

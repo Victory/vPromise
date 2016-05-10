@@ -184,6 +184,36 @@
     });
   };
 
+  vPromise.all = function (prmes) {
+    var ii;
+    var numPrms = prmes.length;
+    var prmsLeft = numPrms;
+    var results = [];
+    var aResolve;
+    var aReject;
+
+    var resolver = function (index) {
+      return function (x) {
+        prmsLeft -= 1;
+        results[index] = x;
+        if (prmsLeft === 0) {
+          aResolve(results);
+        }
+      }
+    };
+
+    for (ii = 0; ii < numPrms; ii++) {
+      prmes[ii].then(resolver(ii), function (r) {
+        aReject(r);
+      });
+    }
+
+    return new vPromise(function (resolve, reject) {
+      aResolve = resolve;
+      aReject = reject;
+    });
+  };
+
   if (typeof module != 'undefined') {
     module.exports = vPromise;
   }
