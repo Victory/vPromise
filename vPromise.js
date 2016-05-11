@@ -203,7 +203,7 @@
     };
 
     for (ii = 0; ii < numPrms; ii++) {
-      prmes[ii].then(resolver(ii), function (r) {
+      vPromise.resolve(prmes[ii]).then(resolver(ii), function (r) {
         aReject(r);
       });
     }

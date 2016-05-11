@@ -174,6 +174,16 @@ describe("vPromise.all", function () {
     return [p1, p2, p3];
   }
 
+  function mdnThree() {
+    var p1 = Promise.resolve(3);
+    var p2 = 1337;
+    var p3 = new Promise(function(resolve, reject) {
+      setTimeout(resolve, 100, "foo");
+    });
+
+    return [p1, p2, p3];
+  }
+
   it("Should return an thenable", function () {
     var args = threeAlreadyResolvedPromises();
 
@@ -224,6 +234,16 @@ describe("vPromise.all", function () {
       assert(x[0] === 1);
       assert(x[1] === 2);
       assert(x[2] === 3);
+      done();
+    });
+  });
+
+  it("Should call resolve with values when all 3 are eventually resolved on the MDN 3", function (done) {
+    var args = threeEventuallyResolvedPromises();
+    vPromise.all(args).then(function (x) {
+      assert(x[0] === 3);
+      assert(x[1] === 1337);
+      assert(x[2] === "foo");
       done();
     });
   });
