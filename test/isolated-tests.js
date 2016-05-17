@@ -175,9 +175,9 @@ describe("vPromise.all", function () {
   }
 
   function mdnThree() {
-    var p1 = Promise.resolve(3);
+    var p1 = vPromise.resolve(3);
     var p2 = 1337;
-    var p3 = new Promise(function(resolve, reject) {
+    var p3 = new vPromise(function(resolve, reject) {
       setTimeout(resolve, 100, "foo");
     });
 
@@ -239,7 +239,7 @@ describe("vPromise.all", function () {
   });
 
   it("Should call resolve with values when all 3 are eventually resolved on the MDN 3", function (done) {
-    var args = threeEventuallyResolvedPromises();
+    var args = mdnThree();
     vPromise.all(args).then(function (x) {
       assert(x[0] === 3);
       assert(x[1] === 1337);
