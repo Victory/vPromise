@@ -248,3 +248,71 @@ describe("vPromise.all", function () {
     });
   });
 });
+
+
+describe("vPromise.race", function () {
+
+  /**
+   * Simple timeout functions
+   * @param t1 - timeout of p1
+   * @param t2 - timeout of p2
+   */
+  function simpleTwoTimeouts(t1, t2) {
+    var p1 = new vPromise(function (resolve, reject) {
+      setTimeout(resolve, t1, "foo");
+    });
+
+    var p2 = new vPromise(function (resolve, reject) {
+      setTimeout(resolve, t2, "bar");
+    });
+
+    return [p1, p2];
+  };
+
+  /**
+   * Simple timeout functions second 1 rejects
+   * @param t1 - timeout of p1
+   * @param t2 - timeout of p2 (rejects)
+   */
+  function simpleTwoWithReject(t1, t2) {
+    var p1 = new vPromise(function (resolve, reject) {
+      setTimeout(resolve, t1, "foo");
+    });
+
+    var p2 = new vPromise(function (resolve, reject) {
+      setTimeout(reject, t2, "bar");
+    });
+
+    return [p1, p2];
+  };
+
+  it("Should resolve fastest first, first promise", function (done) {
+    vPromise.race(simpleTwoTimeouts(50, 100)).then(function (x) {
+      assert(x == "foo");
+      done();
+    });
+  });
+
+  it("Should resolve fastest first, second promise", function (done) {
+    vPromise.race(simpleTwoTimeouts(100, 50)).then(function (x) {
+      assert(x == "bar");
+      done();
+    });
+  });
+
+  it("Should resolve with faster resolve", function (done) {
+    vPromise.race(simpleTwoWithReject(50, 100)).then(function (x) {
+      assert(x == "foo");
+      done();
+    });
+  });
+
+  it("Should reject with faster resolve", function (done) {
+    vPromise.race(simpleTwoWithReject(100, 50)).then(function (x) {
+      assert(false);
+    }, function (x) {
+      assert (x == "bar");
+      done();
+    });
+  });
+});

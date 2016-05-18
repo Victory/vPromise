@@ -214,6 +214,35 @@
     });
   };
 
+  vPromise.race = function (prmes) {
+    var ii;
+    var numPrms = prmes.length;
+    var aResolve;
+    var aReject;
+
+    var called = false;
+    var resolver = function (index) {
+      return function (x) {
+        if (called) {
+          return;
+        }
+        called = true;
+        aResolve(x);
+      }
+    };
+
+    for (ii = 0; ii < numPrms; ii++) {
+      vPromise.resolve(prmes[ii]).then(resolver(ii), function (r) {
+        aReject(r);
+      });
+    }
+
+    return new vPromise(function (resolve, reject) {
+      aResolve = resolve;
+      aReject = reject;
+    });
+  };
+
   if (typeof module != 'undefined') {
     module.exports = vPromise;
   }
