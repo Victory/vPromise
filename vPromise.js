@@ -1,9 +1,6 @@
 (function () {
   'use strict';
 
-  var id = 0; // debug
-  var prmsl = []; // debug
-
   var isObject = function (obj) {
     return typeof obj === "object";
   };
@@ -28,10 +25,7 @@
     this.value = undefined;
     this._state = states.PENDING;
     this.chain = [];
-    this._id = id; // debug
-    id += 1;
     var prms = this;
-    prmsl.push(prms);
 
     try {
       fn(function (val) {
