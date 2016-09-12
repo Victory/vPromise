@@ -11,14 +11,16 @@ Current results of the Promises/A+ Test Suite.
 
 Install:
   `npm install vPromise`
-Usage:
-   const vPromise = require('vPromise');
-   
-   var vp = new vPromise(function (resolve) {
+
+## Usage:
+
+    const vPromise = require('vPromise');
+
+    var vp = new vPromise(function (resolve) {
        resolve('some val');
     }).then(function(result) {
        console.log(result);
-    });
+    });`
 
-## Todo
+### Todo
  - Try to hide some book keeping
