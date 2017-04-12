@@ -239,6 +239,8 @@
 
   if (typeof module != 'undefined') {
     module.exports = vPromise;
+  } else {
+    window['vPromise'] = vPromise;
   }
 
 }());
